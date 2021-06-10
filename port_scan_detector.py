@@ -117,7 +117,7 @@ def des_predizione(sc, medie, contattati, interval):
         else:
             if len(contattati)!=0:
                 medie.append(tot / len(contattati))
-            print("Dati UDP insufficienti (ancora")
+            print("Dati UDP insufficienti (ancora" + str(10-len(medie)) + ')')
         #print(medie)
     sem.release()
     scheduler.enter(interval, 1, des_predizione, (sc, medie, contattati, interval))
