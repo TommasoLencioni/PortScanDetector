@@ -30,7 +30,7 @@ To do so:
 
 * Clone the repo:
 	```bash
-	git clone port_scan_detector && cd port_scan_detector
+	git clone https://github.com/TommasoLencioni/PortScanDetector.git port_scan_detector && cd port_scan_detector
 	```
  * [Optional] Enter a virtual environment.
 * Check if the required packages are installed:
