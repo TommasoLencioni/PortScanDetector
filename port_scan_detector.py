@@ -117,7 +117,7 @@ def des_predizione(sc, medie, contattati, interval):
         else:
             if len(contattati)!=0:
                 medie.append(tot / len(contattati))
-            print("Dati UDP insufficienti (ancora" + str(10-len(medie)) + ')')
+            print("Dati UDP insufficienti (ancora " + str(11-len(medie)) + ' )')
         #print(medie)
     sem.release()
     scheduler.enter(interval, 1, des_predizione, (sc, medie, contattati, interval))
@@ -159,7 +159,6 @@ if __name__ == '__main__':
                         default=180)
     parser.add_argument('--version', action='version', version='Port_Scanner_Detector 0.1')
     args = parser.parse_args()
-    parser.print_help()
     #--------------------------------------
 
     #Inizializzazione oggetti
