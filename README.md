@@ -11,17 +11,19 @@ PortScanDetector needs to receive NetFlow data in JSON format.<br/>
 To do so:
 * Download [nProbe](https://packages.ntop.org) from ntop.
 * Run it according to your configuration but make sure to specifying the following option in order to make it work with the application:
-	* ```bash
-      #Send TCP packets containing flows in JSON format
-	    --tcp (application address):(port)
-   	```
-	* ```bash
-  	  #Use a NetFlow template containing at least the following field
-      -T "%IPV4_SRC_ADDR %IPV4_DST_ADDR %PROTOCOL %L4_SRC_PORT %L4_DST_PORT %TCP_FLAGS %IN_PKTS"
-   	```
-  * e.g.: 
+	 ```bash
+	 #Send TCP packets containing flows in JSON format
+	 --tcp (application address):(port)
+	 ```
+	
+	 ```bash
+  	 #Use a NetFlow template containing at least the following field
+	 -T "%IPV4_SRC_ADDR %IPV4_DST_ADDR %PROTOCOL %L4_SRC_PORT %L4_DST_PORT %TCP_FLAGS %IN_PKTS"
+	 ```
+  	e.g.: 
+  	
   	```bash
-     ./nprobes -i eth0 -b 2 -V 10 --tcp 127.0.0.1:2055 -T "%IPV4_SRC_ADDR %IPV4_DST_ADDR %PROTOCOL %L4_SRC_PORT %L4_DST_PORT %TCP_FLAGS %IN_PKTS"
+	./nprobes -i eth0 -b 2 -V 10 --tcp 127.0.0.1:2055 -T "%IPV4_SRC_ADDR %IPV4_DST_ADDR %PROTOCOL %L4_SRC_PORT %L4_DST_PORT %TCP_FLAGS %IN_PKTS"
    	```
 	
 **PortScanDetector**
