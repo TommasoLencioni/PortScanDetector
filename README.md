@@ -62,12 +62,13 @@ python3 port_scan_detector.py [-h] [-a address] [-p port] [-d seconds] [-e secon
 *PortScanDetector* uses 2 different metric for either TCP and UDP:
 
 ### TCP
-The flows are analyzed looking at the TCP_FLAGS field and clasified based on the following criterias:
-  * 2 -> SYN Scan (-sS, SYN bit set)
-  * 22 -> RST Scan (-sT, kill connection)
-  * 1 -> FIN Scan (-sF, FIN bit set)
-  * 0 -> NULL Scan (-sN, No bites set)
-  * 41 -> Xmas Scan (-sX, FIN, PSH, and URG)
+The flows are analyzed looking at the TCP_FLAGS field and clasified based on the following criterias (nmap flags inside parentheses):
+* 0 -> NULL Scan (-sN, No bits set)
+* 1 -> FIN Scan (-sF, FIN bit set)
+* 2 -> SYN Scan (-sS, SYN bit set)
+* 22 -> RST Scan (-sT, RST bit set)
+* 41 -> Xmas Scan (-sX, FIN, PSH, and URG bits set)
+	
 If a flow matches one of those cases the user is notified through CLI.
 
 ### UDP
