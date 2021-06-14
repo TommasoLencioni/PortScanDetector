@@ -35,7 +35,7 @@ To do so I used [nProbe](https://www.ntop.org/products/netflow/nprobe/) from nto
 * [Optional] Enter a virtual environment.
 * Check if the required packages are installed:
 	```bash
-	pip install -r requirements.txt
+	pip3 install -r requirements.txt
 	```
  
 ## Usage
