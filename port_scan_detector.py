@@ -12,13 +12,17 @@ from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
 #Semaforo da acquisire per l'accesso al dizionario degli hosts contattai
 sem = threading.Semaphore()
+
+#Predizione iniziale impostata al massimo numero
 predizione=sys.maxsize
+
+#Porte il cui traffico viene ignorato
 allowed_ports = [
     138,    # NetBIOS
     5353,   # Multicast DNS
     57621   # Spotify
 ]
-
+VERBOSE = False
 
 def ip2int(addr: str):
     """
@@ -64,7 +68,7 @@ def udp_scan_detect(flow, contacted):
         contacted[flow['IPV4_SRC_ADDR']] = hyperloglog.HyperLogLog(0.1)
     contacted[flow['IPV4_SRC_ADDR']].add(str(flow['IPV4_DST_ADDR']) + ':' + str(flow["L4_DST_PORT"]))
     sem.release()
-    if len(contacted[flow['IPV4_SRC_ADDR']]) > (predizione*1.75):
+    if flow["L4_DST_PORT"] not in allowed_ports and len(contacted[flow['IPV4_SRC_ADDR']]) > (predizione*1.75):
         return True
     else:
         return False
@@ -79,14 +83,14 @@ def scan_detect(flow, contacted):
     :param flow: flusso in esame
     :param contacted: dizionario indicizzato per host contenente HLL della coppia host/porta (solo per pacchetti UDP)
     """
-    if not isMulticast(flow['IPV4_SRC_ADDR']) and not isMulticast(flow['IPV4_DST_ADDR']) and flow["L4_DST_PORT"] not in allowed_ports :
+    if not isMulticast(flow['IPV4_SRC_ADDR']) and not isMulticast(flow['IPV4_DST_ADDR']):
         if int(flow['PROTOCOL']) == 6 and tcp_scan_detect(flow):
             print('Probabile scan TCP: ' + str(flow['IPV4_SRC_ADDR']) + ' scanner, ' + str(flow["IN_PKTS"]) + ' pkts, ' + str(flow["TCP_FLAGS"])
                   + ' flags, ' + str(flow['IPV4_DST_ADDR']) + ':' + str(
-                flow["L4_DST_PORT"]) + ' bersaglio')
-        if int(flow['PROTOCOL']) == 17 and udp_scan_detect(flow, contacted):
+                flow["L4_DST_PORT"]) + ' bersaglio', file=sys.stderr)
+        if int(flow['PROTOCOL']) == 17 and flow["L4_DST_PORT"] not in allowed_ports and udp_scan_detect(flow, contacted):
             print('Possibile scan UDP: ' + str(flow['IPV4_SRC_ADDR']) + ' scanner, ' + str(flow["IN_PKTS"]) + ' pkts, ' + str(flow['IPV4_DST_ADDR']) + ':' + str(
-                flow["L4_DST_PORT"]) + ' bersaglio')
+                flow["L4_DST_PORT"]) + ' bersaglio', file=sys.stderr)
 
 
 def des_predizione(sc, medie, contattati, interval):
@@ -102,23 +106,25 @@ def des_predizione(sc, medie, contattati, interval):
     tot = 0
     sem.acquire()
     for couples in contattati.values():
-        tot+=len(couples)
+        tot += len(couples)
     if tot > 0:
         if len(medie) >= 10:
             medie = medie[1:]
             if len(contattati) != 0:
                 medie.append(tot / len(contattati))
             model = ExponentialSmoothing(medie, initialization_method='estimated')
-            model_fit = model.fit(0.3, 0.7)
+            model_fit = model.fit(0.1, 0.9)
             global predizione
             predizione = model_fit.predict()[0]
-            print('UDP prediction '+ str(model_fit.predict()[0]))
-            #print(medie)
+            if VERBOSE:
+                print('UDP prediction ' + str(model_fit.predict()[0]))
+                print('Medie ' + str(medie))
         else:
-            if len(contattati)!=0:
+            if len(contattati) != 0:
                 medie.append(tot / len(contattati))
-            print("Dati UDP insufficienti (ancora " + str(11-len(medie)) + ' )')
-        #print(medie)
+            if VERBOSE:
+                print("Dati UDP insufficienti (ancora " + str(11-len(medie)) + ' )')
+                print('Medie ' + str(medie))
     sem.release()
     scheduler.enter(interval, 1, des_predizione, (sc, medie, contattati, interval))
 
@@ -157,11 +163,13 @@ if __name__ == '__main__':
     parser.add_argument('-e', '--erase', type=int, dest='erase_interval', action='store', metavar="seconds",
                         help='Secondi tra due reset del numero delle coppie host/porta contattate tramite UDP',
                         default=180)
+    parser.add_argument('--verbose', dest='verbose', action='store_true', help='Run the program in verbose mode')
     parser.add_argument('--version', action='version', version='Port_Scanner_Detector 0.1')
     args = parser.parse_args()
+    #global VERBOSE
+    VERBOSE = args.verbose
+    print(VERBOSE)
     #--------------------------------------
-
-    #Inizializzazione oggetti
 
     #Dizionario dei contattati UDP
     contattati = dict()
@@ -172,6 +180,7 @@ if __name__ == '__main__':
     #Threads daemon che eseguono i task schedulati
     des = threading.Thread(target=des_daemon, daemon=True, args=(medie, contattati, args.des_interval))
     eraser = threading.Thread(target=eraser_deamon, daemon=True, args=(medie, contattati, args.erase_interval))
+
     #Buffer temporaneo per immagazzinare il JSON parziale ottenuto dal payload frammentato
     tmp = ''
 
@@ -191,7 +200,6 @@ if __name__ == '__main__':
                         conn.send(b'0')
                         data = conn.recv(2048)
                     except ConnectionResetError:
-                        #TODO kill daemons after connection reset
                         print('Connessione con ' + str(addr) + ' interrotta')
                         break
                     if data is None:
@@ -209,10 +217,10 @@ if __name__ == '__main__':
                         else:
                             try:
                                 flow = json.loads(partizioni[0])
-                                #print(flow)
+                                if VERBOSE:
+                                    print(flow)
                             except json.decoder.JSONDecodeError:
                                 print("Formato JSON dei dati non riconosciuto", file=sys.stderr)
-                                #conn.close()
                                 break
                             try:
                                 scan_detect(flow, contattati)
