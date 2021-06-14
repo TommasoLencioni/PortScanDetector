@@ -66,7 +66,6 @@ The flows are analyzed looking at the TCP_FLAGS field and clasified based on the
 * 0 -> NULL Scan (-sN, No bits set)
 * 1 -> FIN Scan (-sF, FIN bit set)
 * 2 -> SYN Scan (-sS, SYN bit set)
-* 22 -> RST Scan (-sT, RST bit set)
 * 41 -> Xmas Scan (-sX, FIN, PSH, and URG bits set)
 	
 If a flow matches one of those cases the user is notified through CLI.

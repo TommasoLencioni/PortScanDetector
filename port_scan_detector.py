@@ -48,14 +48,13 @@ def isMulticast(addr: str):
 
 def tcp_scan_detect(flow):
     # TCP FLAGS
-    # 2 -> SYN Scan (-sS, SYN bit set)
-    # 22 -> RST Scan (-sT, kill connection)
-    # 1 -> FIN Scan (-sF, FIN bit set)
     # 0 -> NULL Scan (-sN, No bites set)
+    # 1 -> FIN Scan (-sF, FIN bit set)
+    # 2 -> SYN Scan (-sS, SYN bit set)
     # 41 -> Xmas Scan (-sX, FIN, PSH, and URG)
+    
     if int(flow["TCP_FLAGS"]) == 2 or int(flow["TCP_FLAGS"]) == 0 or \
-             int(flow["TCP_FLAGS"]) == 22 or int(flow["TCP_FLAGS"]) == 1 \
-             or int(flow["TCP_FLAGS"]) == 41:
+            int(flow["TCP_FLAGS"]) == 1 or int(flow["TCP_FLAGS"]) == 41:
         return True
     else:
         return False
@@ -153,7 +152,7 @@ if __name__ == '__main__':
     #Args parsing
     parser = argparse.ArgumentParser(description='Programma per individuare gli host che stanno effettuando port scanning.')
     parser.add_argument('-a', '--address', type=str, metavar='address', help='Indirizzo sul quale aprire il socket TCP', action='store',
-                        default='127.0.0.1')
+                        default='0.0.0.0')
     parser.add_argument('-p', '--port', type=int, dest='port', action='store', metavar="port",
                         help='Porta sulla quale ricevere i flussi sotto forma di JSON tramite TCP',
                         default=2055)
