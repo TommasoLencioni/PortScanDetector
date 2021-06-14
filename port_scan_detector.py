@@ -168,7 +168,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     #global VERBOSE
     VERBOSE = args.verbose
-    print(VERBOSE)
     #--------------------------------------
 
     #Dizionario dei contattati UDP
