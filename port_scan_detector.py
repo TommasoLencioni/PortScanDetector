@@ -199,7 +199,7 @@ if __name__ == '__main__':
                     try:
                         conn.send(b'0')
                         data = conn.recv(2048)
-                    except ConnectionResetError:
+                    except:
                         print('Connessione con ' + str(addr) + ' interrotta')
                         break
                     if data is None:
