@@ -1,5 +1,5 @@
 # PortScanDetector
-##Introduction to problem
+## Introduction to problem
 
 Port scanning is a technic through which a machine can discover various informations about the status of a port (or a range of them) of a specific host or subnet.<br/>
 This practice can be used for both management and malicious activities.<br/>
@@ -8,9 +8,9 @@ This tool aims to discover scans by analyzing the pace and structure of the traf
 In order to do that NetFlow data is collected and analyzed in real time.<br/>
 Notice that results got by this tool are just a suggestion, not a certainty.
 
-##Requirements
+## Requirements
 
-###nProbes
+### nProbes
 
 PortScanDetector needs to receive NetFlow data in JSON format.<br/>
 To do so I used [nProbe](https://www.ntop.org/products/netflow/nprobe/) from ntop:
@@ -31,7 +31,7 @@ To do so I used [nProbe](https://www.ntop.org/products/netflow/nprobe/) from nto
     ./nprobes -i eth0 -b 2 -V 10 --tcp 127.0.0.1:2055 -T "%IPV4_SRC_ADDR %IPV4_DST_ADDR %PROTOCOL %L4_SRC_PORT %L4_DST_PORT %TCP_FLAGS %IN_PKTS"
    	```
 	
-###PortScanDetector
+### PortScanDetector
 
 This tool is a Python script that binds on a port and listen to NetFlow data from one probe at a time.<br/>
 
@@ -89,7 +89,7 @@ The flows are analyzed looking at the TCP_FLAGS field and classified based on th
 	
 If a flow matches one of those cases the user is notified through CLI.
 
-####Limitations
+#### Limitations
 * ***False positive***<br/>
 	There could be situations where a host tries to connect without succeeding (resulting in 2 as TCP_FLAGS) without malicious intentions.  
   	This scenario can't be taken into account due to a "zero knowledge" principle where all traffic is "guilty until proven innocent" (in this case by concluding the three-way handshake).
@@ -102,12 +102,17 @@ If a flow matches one of those cases the user is notified through CLI.
 	This is true only for open ports, filtered and closed ports will result in a TCP_FLAG of 2 due to the attempted connection.
   	![sT scan](/images/sT_scan.png)
   	![no open](/images/no_open.png)
+	
+	
+* ***Idle Scan***<br/>
+	Scans made using another host as disguise (e.g. -sI option of *nmap*) could reveal that the "zombie" host is the source of the attack.
+	I couldn't do test about that due to safety features on TCP packet ID of my network devices.
   
 ### UDP
 The flows are analyzed looking at the number of couples host/port contacted by each source host.<br/>
 If it exceeds the double exponential smoothing prevision (made with the time serie of the last 10 averages of couples among all source hosts) * 1.75 the user is notified.
 
-####Limitations
+#### Limitations
 * ***False positive***<br/>
 	There could be situations where a host contacts through UDP more hosts than the prediction*1.75 with no malicious intentions. 
   	
@@ -117,6 +122,5 @@ If it exceeds the double exponential smoothing prevision (made with the time ser
 * ***False negative***<br/>
 	A scanning host can contact through UDP less couples host/port than the prediction*1.75 and still not be spotted by the tool.<br/>
   	This problem could have been addressed making assumptions about the traffic characteristics (number of packets, flow lifespan, bytes transmitted).
+	
   	Doing so could still have led to wrong evaluations.
-  
-##Excample
