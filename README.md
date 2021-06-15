@@ -99,7 +99,7 @@ If a flow matches one of those cases the user is notified through CLI.
 	In case of scans that completes the three-way handshake (e.g. TCP Connect() Scan done with -sT option in *nmap*) the attack is indistinguishable
   	from a normal communication therefore the flow is not highlighted.
   
-	This is true only for open ports, filtered and closed ports will result in a TCP_FLAG of 2 due to the attempted connection.
+	This is true only for open ports, filtered and closed ports will result in a TCP_FLAG of 2 due to the attempted connection.<br/>
   	![sT scan](/images/sT_scan.png)
   	![no open](/images/no_open.png)
 	
