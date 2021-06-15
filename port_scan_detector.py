@@ -135,7 +135,6 @@ def des_daemon(medie, contacted, interval):
 def erase(sc, medie, contacted, interval):
     sem.acquire()
     contacted.clear()
-    #del medie[:]
     sem.release()
     scheduler.enter(interval, 1, erase, (sc, medie, contacted, interval))
 
@@ -165,7 +164,7 @@ if __name__ == '__main__':
     parser.add_argument('--verbose', dest='verbose', action='store_true', help='Run the program in verbose mode')
     parser.add_argument('--version', action='version', version='Port_Scanner_Detector 0.1')
     args = parser.parse_args()
-    #global VERBOSE
+
     VERBOSE = args.verbose
     #--------------------------------------
 
